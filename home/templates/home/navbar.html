@@ -6,17 +6,43 @@
               aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
+
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto">
+
+
+        {% if request.path != "/login/" and request.path != "/register/" %}
+        <li class="nav-item">
+          <form class="d-flex" role="search">
+            <input class="form-control me-2" type="search" placeholder="Buscar Procucto" aria-label="Search">
+          </form>
+        </li>
+        {% endif %}
+
+
           <li class="nav-item">
             <a class="nav-link active" href="#">Catalogo</a>
           </li>
+          {% if user.is_authenticated %}
+          <!-- Si el usuario está logueado, muestra su nombre -->
           <li class="nav-item">
-            <a class="nav-link" href="#">Registrarse</a>
+            <span class="nav-link">Bienvenido, {{ user.username }}</span>
+          </li>
+          <li class="nav-item">
+            <form action="{% url 'logout' %}" method="POST" style="display: inline;">
+              {% csrf_token %}
+              <button type="submit" class="nav-link btn btn-link" style="color: white;">Cerrar sesión</button>
+            </form>
+          </li>
+        {% else %}
+          <!-- Si el usuario no está logueado, muestra los enlaces de login y registro -->
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'register' %}">Registrarse</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="{% url 'login' %}">Login</a>
           </li>
+        {% endif %}
         </ul>
       </div>
     </div>
