@@ -7,5 +7,5 @@ def home_view(request):
 
 
 def listar_productos(request):
-    productos= Producto.objects.    all()
+    productos= Producto.objects.all()
     return render(request, 'home/catalogo.html', {'productos': productos})
