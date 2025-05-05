@@ -28,7 +28,7 @@
 
         <!-- Mostrar el botón de cerrar sesión solo si el token existe -->
         <li class="nav-item" id="logout-section" style="display: none;">
-          <button class="btn btn-danger" id="logout-btn">Cerrar sesión</button>
+          <a class="nav-link" href="#" id="logout-btn">Cerrar sesión</a>
         </li>
 
         <!-- Si no hay token, mostrar login y registro -->
@@ -84,7 +84,7 @@
 
           // Obtener el nombre de usuario desde la API usando el user_id
           fetchUsername(userId).then(username => {
-              userNameDisplay.textContent = `Hola, ${username}`;  // Mostramos el nombre de usuario
+              userNameDisplay.textContent = `${username}`;  // Mostramos el nombre de usuario
               logoutSection.style.display = 'block';
               userNameSection.style.display = 'block';  // Mostrar el nombre de usuario
               loginSection.style.display = 'none';

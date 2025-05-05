@@ -1,5 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from django.contrib import messages
 from rest_framework import status
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -50,8 +51,10 @@ class LoginView(APIView):
                 return response
 
             # Si las credenciales son incorrectas
-            return JsonResponse({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+            messages.error(request, 'Cuenta no encontrada o credenciales incorrectas.')
+            return redirect('login') 
         
+
         # Si el serializer no es válido
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
