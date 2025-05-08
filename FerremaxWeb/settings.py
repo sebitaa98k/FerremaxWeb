@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'home',
     'account',
+    'admin_crud_rol',
     'rest_framework',
     'rest_framework_simplejwt',
 ]

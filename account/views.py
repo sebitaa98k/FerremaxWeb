@@ -13,11 +13,42 @@ from django.views.decorators.csrf import csrf_exempt
 # Vista para el api rest del registro
 class RegisterView(APIView):
     def post(self, request):
+        # Obtener los datos del formulario
+        username = request.data.get('username')
+        email = request.data.get('email')
+        passw = request.data.get('password')
+        passwr = request.data.get('passwordrepetir')
+
+        # Comprobar si el nombre de usuario ya está registrado
+        if User.objects.filter(username=username).exists():
+            messages.error(request, "El nombre de usuario ya está en uso.")
+        
+        # Comprobar si el correo electrónico ya está registrado
+        if User.objects.filter(email=email).exists():
+            messages.error(request, "Este correo electrónico ya está registrado.")
+
+        ## aca necesito otro mensaje pero esta vez diciendo que las contraseñas no son iguales
+        
+        if passw != passwr:
+            messages.error(request,'Las contraseñas no son iguales')
+
+        # Si hay mensajes de error, no continuar con el registro
+        if messages.get_messages(request):
+            return redirect('register')  # Redirige si hay errores
+
+        # Si no hay errores, proceder a crear el usuario
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
-            return Response({"message": "User created successfully"}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Redirigir al login después de crear el usuario
+            response = JsonResponse({"message": "Usuario creado correctamente"})
+            response['Location'] = '/login/'  # Redirigir a login
+            response.status_code = 302
+            return response
+        
+        # Si el serializer no es válido, devolver los errores como mensajes en el frontend
+        return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # Vista para el api rest del login
 class LoginView(APIView):
@@ -34,30 +65,30 @@ class LoginView(APIView):
                 access_token = str(refresh.access_token)
 
                 refresh.payload['username'] = user.username
+                refresh.payload['role'] = 'staff' if user.is_staff else 'regular'  # Agregar el rol al JWT
 
-                # Crear la respuesta de redirección
-                response = JsonResponse({'message': 'Login successful'})  # Retornamos un JsonResponse primero
+                # Establecer el token en una cookie
+                response = JsonResponse({'message': 'Login successful'})
+                response.set_cookie('access_token', access_token, httponly=False, secure=True, max_age=3600, samesite='Lax')
 
-                # Establecer el token en una cookie segura
-                response.set_cookie(
-                    #aca se guarda el token en las cookies y redirigue al 
-                    'access_token', access_token, httponly=False, secure=True, max_age=3600, samesite='Lax'
-                ) 
+                # Si el usuario es staff, mostramos el mensaje en la consola del navegador
+                if user.is_staff:
+                    response['Location'] = '/admin_crud_rol/admin-index/'
+                    response.status_code = 302
 
-                # Redirigir a la página de inicio (root)
-                response['Location'] = '/'  # Redirigir a la raíz del sitio
-                response.status_code = 302  # Establecemos un código de redirección
+                else:
+                    # Redirigir al home si no es staff
+                    response['Location'] = '/'
+                    response.status_code = 302
 
                 return response
 
             # Si las credenciales son incorrectas
             messages.error(request, 'Cuenta no encontrada o credenciales incorrectas.')
-            return redirect('login') 
-        
+            return redirect('login')
 
         # Si el serializer no es válido
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 # Vista para el frontend (ejemplo de una página de login con un formulario tradicional)
 def Login_view(request):
